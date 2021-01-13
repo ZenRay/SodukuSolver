@@ -34,3 +34,5 @@ class CellTest(unittest.TestCase):
 
         self.assertTrue(obj.valid(self.cell, [0, 1, 3]))
         self.assertFalse(obj.valid(self.cell, [1, 9, 2]))
+        self.assertTrue(self.cell._valid(12, [0, 1, 3]))
+        self.assertFalse(self.cell._valid(12, [0, 12, 3]))
