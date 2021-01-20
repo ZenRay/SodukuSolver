@@ -37,3 +37,6 @@ class Cell:
         在 filter 中，那么返回 False，反之取 True
         """
         return value not in filter
+
+class Board:
+    pass
