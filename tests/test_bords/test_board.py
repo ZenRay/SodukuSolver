@@ -47,3 +47,10 @@ class BoardTest(unittest.TestCase):
             self.assertEqual(cell.value, value, f"Cell at {cell.row}, {cell.column}"
                 f"Value at {index}"
             )
+
+
+    def test_board_length(self):
+        """Test Total Board Cell"""
+        self.assertEqual(len(self.board), self.board.rows * self.board.cols)
+        self.board.boxes[0].pop()
+        self.assertEqual(len(self.board), self.board.rows * self.board.cols - 1)

@@ -141,3 +141,8 @@ class Board:
         for row in self.boxes:
             for cell in row:
                 yield cell
+
+        
+    def __len__(self):
+        """Get Cell Number"""
+        return sum(len(row) for row in self.boxes)
