@@ -30,3 +30,12 @@ class BoardTest(unittest.TestCase):
     def test_repr(self):
         self.assertEqual(len(repr(self.board)), len(display))
         self.assertEqual(repr(self.board), display)
+    
+
+    def test_board_cell(self):
+        for col, value in enumerate("..3.2.6..", 1):
+            loc = f"A{col}"
+            cell = self.board[loc]
+            self.assertEqual(cell.value, value, f"Target col: {col}"
+                f" cell:{cell.row}, {cell.column}"
+            )
