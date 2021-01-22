@@ -39,6 +39,10 @@ class BoardTest(unittest.TestCase):
             self.assertEqual(cell.value, value, f"Target col: {col}"
                 f" cell:{cell.row}, {cell.column}"
             )
+        
+        # 异常测试，检验 col 起始索引不是 1 时，报值异常
+        with pytest.raises(ValueError):
+            self.board["A0"]
 
     
     def test_board_iter(self):
