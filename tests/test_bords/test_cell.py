@@ -4,7 +4,7 @@ import pytest
 from unittest import mock
 
 
-from source.board import Cell
+from source.env import Cell
 
 class CellTest(unittest.TestCase):
     """Test Board Cell"""
