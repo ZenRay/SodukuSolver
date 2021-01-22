@@ -43,6 +43,11 @@ class Cell:
 
 
 class Board:
+    """Board Enviroment
+
+    Board enviroment contain cells. The first cell index is 'A1', which columns value
+    starts with '1', row value starts with 'A'
+    """
     def __init__(self, rows, cols, grid=3):
         """Board Enviroment
         
@@ -60,9 +65,9 @@ class Board:
         assert values is None or self.rows * self.cols == len(values), \
             "Grid length isn't equal with total of the box cell"
 
-        for row in range(self.rows):
+        for row in range(1, self.rows + 1):
             rows = []
-            for col in range(self.cols):
+            for col in range(1, self.cols + 1):
                 # get cell value
                 if values is not None:
                     value = values[0]
@@ -105,3 +110,15 @@ class Board:
             if i % 3 == 0 and i != len(self.boxes):
                 fmt.append("+".join(["-" * self.grid * 2] * self.grid))
         return "\n".join(fmt)
+
+
+    def __getitem__(self, loc):
+        """Extract Location Value
+        
+        """
+        row = ord(loc[0]) % ROW_START
+        col = int(loc[1])
+        if col < 1:
+            raise ValueError(f"Column value must be over 1 at board env, but get{col}")
+
+        return self.boxes[row][col - 1]
