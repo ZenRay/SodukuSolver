@@ -39,3 +39,11 @@ class BoardTest(unittest.TestCase):
             self.assertEqual(cell.value, value, f"Target col: {col}"
                 f" cell:{cell.row}, {cell.column}"
             )
+
+    
+    def test_board_iter(self):
+        """Test Cell Iterator"""
+        for index, (cell, value) in enumerate(zip(self.board, VALUES)):
+            self.assertEqual(cell.value, value, f"Cell at {cell.row}, {cell.column}"
+                f"Value at {index}"
+            )

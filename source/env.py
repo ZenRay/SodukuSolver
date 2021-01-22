@@ -135,3 +135,9 @@ class Board:
             raise ValueError(f"Column value must be over 1 at board env, but get{col}")
 
         return self.boxes[row][col - 1]
+
+
+    def __iter__(self):
+        for row in self.boxes:
+            for cell in row:
+                yield cell
