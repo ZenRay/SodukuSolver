@@ -10,7 +10,7 @@ class Cell:
 
         """
         self.row = row
-        self.column = column
+        self.column = str(column)
         self.value = value if value is not None else ""
 
     
@@ -41,6 +41,19 @@ class Cell:
         """
         return value not in filter
 
+
+    def __contains__(self, items):
+        """检查值限定在确认的范围
+        
+        examples:
+        ------------
+        >>> cell = Cell("A", 1, 8)
+        >>> [0, 2, 7] in cell
+            False
+        >>> [0, 8] in cell
+            True
+        """
+        return not self._valid(self.value, items)
 
 class Board:
     """Board Enviroment

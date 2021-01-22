@@ -14,7 +14,7 @@ class CellTest(unittest.TestCase):
     def test_property(self):
         """Test Cell Property"""
         self.assertEqual(self.cell.row, "A")
-        self.assertEqual(self.cell.column, 1)
+        self.assertEqual(self.cell.column, "1")
         self.assertEqual(self.cell.value, 9)
 
     def test_repr(self):
@@ -36,3 +36,9 @@ class CellTest(unittest.TestCase):
         self.assertFalse(obj.valid(self.cell, [1, 9, 2]))
         self.assertTrue(self.cell._valid(12, [0, 1, 3]))
         self.assertFalse(self.cell._valid(12, [0, 12, 3]))
+
+    
+    def test_contains(self):
+        """Cell Value In Items"""
+        self.assertTrue([0, 9] in self.cell)
+        self.assertFalse([0, 1, 3] in self.cell)
