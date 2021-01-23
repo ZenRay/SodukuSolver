@@ -3,7 +3,7 @@
 消除法解决数独
 """
 
-from ..env import Board
+from ..env import Board, ROW_START
 
 import math
 
@@ -35,9 +35,12 @@ class Elimination:
         # 创建环境
         rows, cols, grid = int(rows), int(cols), int(math.sqrt(rows))
         self.env = Board(rows, cols, grid)
+        self.env._create(values)
 
         if copy:
             self._copy = self._copy_env(self.env)
+        else:
+            self._copy = None
 
 
     @classmethod
@@ -49,6 +52,7 @@ class Elimination:
         """
         result = Board(board.rows, board.cols)
         for cell, target in zip(result, board):
+            cell.grid = target.grid
             if isinstance(target.value, int):
                 cell.value = str(target.value)
             elif isinstance(target.value, str):
@@ -61,3 +65,23 @@ class Elimination:
                                 f" get type {type(target.value)}")
         
         return result
+
+
+    def candidates(self, loc):
+        """生成待选数值
+        """
+        loc_row = ord(loc[0]) % ROW_START
+        loc_col = int(loc[1]) - 1
+        grid = [loc_row // self.env.grid, loc_col // self.env.grid]
+        # 筛选出已经确定的数据值，分别筛选出行、列以及小环境内的数据值
+        values = [str(i) for i in range(1, 10)]
+        
+        for rindex, row in enumerate(self.env.boxes):
+            for cindex, cell in enumerate(row):
+                if cell.value not in values:
+                    continue
+                
+                if rindex == loc_row or cindex == loc_col or cell.grid == grid:
+                    values.remove(cell.value)
+                
+        return values
