@@ -88,14 +88,21 @@ class Elimination:
 
 
     def train(self):
-        """训练模型"""
+        """训练模型
+        
+        """
 
         locations = [chr(ROW_START + row)+f"{col}" for row in range(0, 9) for col in range(1, 10)]
+        # 第一步轮训，是直接更新只有单一结果值的 cell
         for loc, cell in zip(locations, self.env):
             if not cell.value.isdigit():
                 cands = self.candidates(loc)
+                # 如果是单一值，直接更新结果，否者将备选结果赋值给副本
                 if len(cands) == 1:
                     cell.value = cands[0]
+                    self._copy[loc].value = cands[0]
+                elif len(cands) > 1:
+                    self._copy[loc].value = cands
                 elif not cands:
                     raise ValueError("Candidates values wrong")
         
