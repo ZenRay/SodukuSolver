@@ -85,3 +85,18 @@ class Elimination:
                     values.remove(cell.value)
                 
         return values
+
+
+    def train(self):
+        """训练模型"""
+
+        locations = [chr(ROW_START + row)+f"{col}" for row in range(0, 9) for col in range(1, 10)]
+        for loc, cell in zip(locations, self.env):
+            if not cell.value.isdigit():
+                cands = self.candidates(loc)
+                if len(cands) == 1:
+                    cell.value = cands[0]
+                elif not cands:
+                    raise ValueError("Candidates values wrong")
+        
+        return self.env
