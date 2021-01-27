@@ -59,7 +59,13 @@ class Board:
     """Board Enviroment
 
     Board enviroment contain cells. The first cell index is 'A1', which columns value
-    starts with '1', row value starts with 'A'
+    starts with '1', row value starts with 'A'.
+
+    There are some properties:
+    rows: total lines
+    cols: total colums
+    boxes: board env stores cells
+    grid: grid cells in env, where is the small env contains with 'grid' * 'grid'
     """
     def __init__(self, rows, cols, grid=3):
         """Board Enviroment
@@ -75,9 +81,6 @@ class Board:
 
         If grid values exist, initialize the cell value, otherwise setup None
         """
-        assert values is None or self.rows * self.cols == len(values), \
-            "Grid length isn't equal with total of the box cell"
-
         for row in range(1, self.rows + 1):
             rows = []
             for col in range(1, self.cols + 1):
@@ -87,8 +90,10 @@ class Board:
                     values = values[1:]
                 else:
                     value = None
-                
-                rows.append(Cell(chr(row + ROW_START), col, value))
+                cell = Cell(chr(row + ROW_START - 1), col, value)
+
+                cell.grid = [(row - 1) // self.grid, (col-1) // self.grid]
+                rows.append(cell)
                 
             # put rows cell into box
             self.boxes.append(rows)
