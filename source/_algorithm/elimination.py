@@ -50,8 +50,11 @@ class Elimination:
         复制环境同时修正 cell 中的值，如果数据是数字或者数值字符串，直接保留为字符数值；如果是空格
         或者 '.' 那么替换为空格。其他类型表示 board 中的 Cell 数据值类型不准确
         """
-        result = Board(board.rows, board.cols)
+        result = Board(board.rows, board.cols, board.grid)
+        result._create()
+
         for cell, target in zip(result, board):
+            
             cell.grid = target.grid
             if isinstance(target.value, int):
                 cell.value = str(target.value)
@@ -87,23 +90,36 @@ class Elimination:
         return values
 
 
-    def train(self):
-        """训练模型
+    def update(self, board=None):
+        """更新结果
         
+        完成一轮查询，更新 sudoku 的 board。需要返回更新后的副本和 board 结果，其中 board
+        仅保留了值，而不保留备选值在副本中会保留备选值
         """
-
         locations = [chr(ROW_START + row)+f"{col}" for row in range(0, 9) for col in range(1, 10)]
+
+        if board is None:
+            board = self.env
+
+        # 创建一个副本
+        copy = self._copy_env(board)
         # 第一步轮训，是直接更新只有单一结果值的 cell
-        for loc, cell in zip(locations, self.env):
+        for loc, cell in zip(locations, board):
             if not cell.value.isdigit():
                 cands = self.candidates(loc)
                 # 如果是单一值，直接更新结果，否者将备选结果赋值给副本
                 if len(cands) == 1:
                     cell.value = cands[0]
-                    self._copy[loc].value = cands[0]
+                    copy[loc].value = cands[0]
                 elif len(cands) > 1:
-                    self._copy[loc].value = cands
+                    copy[loc].value = cands
                 elif not cands:
                     raise ValueError("Candidates values wrong")
         
-        return self.env
+        # 如果存在空列表，那么说明没有在该路径下得到结果
+        if any(isinstance(cell.value, list) and not cell.value for cell in copy):
+            return None, board
+        
+        # 其他情况直接返回副本结果
+        return copy, board
+
