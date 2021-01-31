@@ -4,12 +4,22 @@
 """
 
 from ..env import Board, ROW_START
+from collections import defaultdict
+from copy import deepcopy
+import time
 
 import math
 
 
 
 class Elimination:
+    """ 
+    该方法是直接参考 消除法中的思路:
+    candidates: 编列 board，消除待选项中多余的值
+    update: 更新待选项中列表只有一个元素的 cell
+    redue: 循环更新结果，确保每批次都不能再次更新之后传递出结果
+    search: 递归更新结果，确保结果满足条件
+    """
     def __init__(self, values, *, rows=None, cols=None, copy=True) -> None:
         """初始化对象
 
@@ -34,14 +44,16 @@ class Elimination:
         
         # 创建环境
         rows, cols, grid = int(rows), int(cols), int(math.sqrt(rows))
-        self.env = Board(rows, cols, grid)
-        self.env._create(values)
-
+        env = Board(rows, cols, grid)
+        env._create(values)
+        
+        self.env = self._copy_env(env)
         if copy:
-            self._copy = self._copy_env(self.env)
+            self._copy = self._copy_env(env)
         else:
             self._copy = None
 
+        self.solutions = []
 
     @classmethod
     def _copy_env(cls, board):
@@ -62,7 +74,7 @@ class Elimination:
                 if target.value.isdigit():
                     cell.value = target.value
                 elif target.value == "" or target.value == ".":
-                    cell.value = []
+                    cell.value = [str(i) for i in range(1, 10)]
             else:
                 raise ValueError(f"Cell value is not a digit value,"
                                 f" get type {type(target.value)}")
@@ -70,56 +82,65 @@ class Elimination:
         return result
 
 
-    def candidates(self, loc):
-        """生成待选数值
+    def candidates(self, board):
+        """删除非待选数值
         """
-        loc_row = ord(loc[0]) % ROW_START
-        loc_col = int(loc[1]) - 1
-        grid = [loc_row // self.env.grid, loc_col // self.env.grid]
-        # 筛选出已经确定的数据值，分别筛选出行、列以及小环境内的数据值
-        values = [str(i) for i in range(1, 10)]
+        solved = [(f"{cell.row}{cell.column}", cell.grid) for cell in board if len(cell.value) == 1]
+        for loc, grid in solved:
+            value = board[loc].value
         
-        for rindex, row in enumerate(self.env.boxes):
-            for cindex, cell in enumerate(row):
-                if cell.value not in values:
-                    continue
-                
-                if rindex == loc_row or cindex == loc_col or cell.grid == grid:
-                    values.remove(cell.value)
-                
-        return values
+            peers = set(board.row_keys[loc[0]] + board.column_keys[loc[1]] + board.grid_keys[tuple(grid)]) - set([loc])
+            for peer in peers:
+                if value in board[peer].value and isinstance(board[peer].value, list):
+                    board[peer].value.remove(value)
+        return board
 
 
-    def update(self, board=None):
+    def update(self, board):
         """更新结果
         
-        完成一轮查询，更新 sudoku 的 board。需要返回更新后的副本和 board 结果，其中 board
-        仅保留了值，而不保留备选值在副本中会保留备选值
         """
-        locations = [chr(ROW_START + row)+f"{col}" for row in range(0, 9) for col in range(1, 10)]
+        for cell in board:
+            if isinstance(cell.value, list) and len(cell.value) == 1:
+                cell.value = cell.value[0]
+            
+            # 更新 env 值
+            if isinstance(cell.value, str) and cell.value.isdigit():
+                self.env[f"{cell.row}{cell.column}"].value = cell.value
+        return board
 
-        if board is None:
-            board = self.env
 
-        # 创建一个副本
-        copy = self._copy_env(board)
-        # 第一步轮训，是直接更新只有单一结果值的 cell
-        for loc, cell in zip(locations, board):
-            if not cell.value.isdigit():
-                cands = self.candidates(loc)
-                # 如果是单一值，直接更新结果，否者将备选结果赋值给副本
-                if len(cands) == 1:
-                    cell.value = cands[0]
-                    copy[loc].value = cands[0]
-                elif len(cands) > 1:
-                    copy[loc].value = cands
-                elif not cands:
-                    raise ValueError("Candidates values wrong")
+    def reduce(self, board):
+        solved = [f"{cell.row}{cell.column}" for cell in board if len(cell.value) == 1]
+        stalled = False
+        while not stalled:
+            solved_before = len([cell for cell in board if len(cell.value) == 1])
+            board = self.candidates(board)
+            board = self.update(board)
+            solved_after = len([cell for cell in board if len(cell.value) == 1])
+
+            stalled = solved_before == solved_after
+
+            if len([cell for cell in board if not cell.value]):
+                return False
+        return board
+
+
+    def search(self, board):
+        board = self.reduce(board)
+        if not board:
+            return 
         
-        # 如果存在空列表，那么说明没有在该路径下得到结果
-        if any(isinstance(cell.value, list) and not cell.value for cell in copy):
-            return None, board
-        
-        # 其他情况直接返回副本结果
-        return copy, board
+        if all(len(cell.value) == 1 for cell in board):
+            return board
 
+
+        length, loc = min((len(cell.value), f"{cell.row}{cell.column}") for cell in board if len(cell.value) > 1)
+        for value in board[loc].value:
+            new_board = deepcopy(board)
+            new_board[loc].value = value
+
+            attempt = self.search(new_board)
+            if attempt:
+                return  attempt
+            

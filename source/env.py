@@ -1,5 +1,5 @@
 #coding:utf8
-
+from collections import defaultdict
 # row start charater
 ROW_START = ord("A")
 
@@ -75,6 +75,9 @@ class Board:
         self.cols = cols
         self.boxes = []
         self.grid = grid
+        self.grid_keys = defaultdict(list)
+        self.row_keys = defaultdict(list)
+        self.column_keys = defaultdict(list)
 
     def _create(self, values=None):
         """Create Board Box
@@ -93,6 +96,9 @@ class Board:
                 cell = Cell(chr(row + ROW_START - 1), col, value)
 
                 cell.grid = [(row - 1) // self.grid, (col-1) // self.grid]
+                self.grid_keys[tuple(cell.grid)].append(f"{cell.row}{cell.column}")
+                self.row_keys[cell.row].append(f"{cell.row}{cell.column}")
+                self.column_keys[cell.column].append(f"{cell.row}{cell.column}")
                 rows.append(cell)
                 
             # put rows cell into box
@@ -119,10 +125,11 @@ class Board:
         for i, row in enumerate(self.boxes, 1):
             line = ""
             for index, cell in enumerate(row, 1):
+                value = cell.value if not isinstance(cell.value, list) else "."
                 if index != len(row) and index % 3 == 0:
-                    line += f"{cell.value} " + "|"
+                    line += f"{value} " + "|"
                 else:
-                    line += f"{cell.value} "
+                    line += f"{value} "
             fmt.append(line)
 
             if i % 3 == 0 and i != len(self.boxes):
